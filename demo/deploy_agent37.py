@@ -15,7 +15,7 @@ KEY = os.environ.get("AGENT37_API_KEY")
 HOSTING = "https://api.agent37.com/v1"
 UPLOADS = [
     "package.json", "package-lock.json", "demo/openapi.json", "demo/github-openapi.json",
-    "src/adapter.mjs", "src/planner.mjs", "src/web.mjs",
+    "src/adapter.mjs", "src/planner.mjs", "src/server.mjs", "src/web.mjs",
     "public/index.html", "public/style.css", "public/app.js",
 ]
 
