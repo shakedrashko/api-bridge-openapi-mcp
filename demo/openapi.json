@@ -1,0 +1,23 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Public Post API demo", "version": "1.0.0" },
+  "servers": [{ "url": "https://jsonplaceholder.typicode.com" }],
+  "paths": {
+    "/posts": {
+      "get": {
+        "operationId": "listPosts",
+        "summary": "List public example posts",
+        "parameters": [{ "name": "userId", "in": "query", "schema": { "type": "integer" } }]
+      }
+    },
+    "/posts/{id}": {
+      "get": {
+        "operationId": "getPost",
+        "summary": "Get one public example post",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }]
+      },
+      "delete": { "operationId": "deletePost", "summary": "Excluded mutating operation" }
+    }
+  }
+}
+
