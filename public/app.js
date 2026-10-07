@@ -6,6 +6,48 @@ const button = document.querySelector('#run-button');
 const status = document.querySelector('#request-status');
 const result = document.querySelector('#result code');
 let tools = [];
+const staticPreview = location.hostname.endsWith('.github.io') || new URLSearchParams(location.search).has('static');
+const staticTools = [
+  { name: 'listPosts', path: '/posts', description: 'List public example posts', source: 'JSONPlaceholder', params: [{ name: 'userId', location: 'query', type: 'integer' }] },
+  { name: 'getPost', path: '/posts/{id}', description: 'Get one public example post', source: 'JSONPlaceholder', params: [{ name: 'id', location: 'path', type: 'integer' }] },
+  { name: 'getGitHubIssue', path: '/repos/{owner}/{repo}/issues/{number}', description: 'Fetch one public GitHub issue or pull request by owner, repository, and number', source: 'GitHub Issues', params: [{ name: 'owner', location: 'path', type: 'string' }, { name: 'repo', location: 'path', type: 'string' }, { name: 'number', location: 'path', type: 'integer' }] },
+];
+
+async function invokeStatic(name, args) {
+  let url;
+  if (name === 'listPosts') {
+    url = new URL('https://jsonplaceholder.typicode.com/posts');
+    if (args.userId !== undefined) {
+      if (!Number.isSafeInteger(args.userId) || args.userId < 1) throw new Error('userId must be a positive integer');
+      url.searchParams.set('userId', String(args.userId));
+    }
+  } else if (name === 'getPost') {
+    if (!Number.isSafeInteger(args.id) || args.id < 1) throw new Error('id must be a positive integer');
+    url = new URL(`https://jsonplaceholder.typicode.com/posts/${args.id}`);
+  } else if (name === 'getGitHubIssue') {
+    if (!/^[A-Za-z0-9._-]{1,100}$/.test(args.owner || '') || !/^[A-Za-z0-9._-]{1,100}$/.test(args.repo || '') || !Number.isSafeInteger(args.number) || args.number < 1) throw new Error('Enter a valid repository and positive issue number');
+    url = new URL(`https://api.github.com/repos/${encodeURIComponent(args.owner)}/${encodeURIComponent(args.repo)}/issues/${args.number}`);
+  } else {
+    throw new Error('Unknown or unapproved tool');
+  }
+  const started = performance.now();
+  const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(8000), headers: { accept: 'application/json' } });
+  if (!response.ok) throw new Error(`Public API returned HTTP ${response.status}`);
+  const reader = response.body.getReader();
+  let size = 0;
+  const chunks = [];
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.length;
+    if (size > 200_000) { await reader.cancel(); throw new Error('Public API response exceeded 200 KB'); }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
+  return { name, result: JSON.parse(new TextDecoder().decode(bytes)), durationMs: Math.round(performance.now() - started) };
+}
 
 function displayResult(name, value) {
   if (name === 'getGitHubIssue') {
@@ -41,9 +83,13 @@ function renderParams() {
 
 async function loadTools() {
   try {
-    const response = await fetch('/api/tools');
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    tools = await response.json();
+    if (staticPreview) {
+      tools = staticTools;
+    } else {
+      const response = await fetch('/api/tools');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      tools = await response.json();
+    }
     document.querySelector('#tool-count').textContent = `${tools.length} tools`;
     for (const tool of tools) {
       const card = document.createElement('div');
@@ -85,13 +131,18 @@ form.addEventListener('submit', async (event) => {
   status.textContent = 'Running...';
   result.textContent = 'Waiting for the public API';
   try {
-    const response = await fetch('/api/invoke', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ name: toolSelect.value, args }),
-    });
-    const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+    let payload;
+    if (staticPreview) {
+      payload = await invokeStatic(toolSelect.value, args);
+    } else {
+      const response = await fetch('/api/invoke', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: toolSelect.value, args }),
+      });
+      payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+    }
     result.textContent = JSON.stringify(displayResult(payload.name, payload.result), null, 2);
     status.textContent = `HTTP 200  -  ${payload.durationMs} ms`;
   } catch (error) {
@@ -110,13 +161,18 @@ const agentState = document.querySelector('#cloud-state');
 const agentStatus = document.querySelector('#agent-status');
 const agentResult = document.querySelector('#agent-result code');
 
-fetch('/api/cloud-status').then((response) => response.json()).then(({ available }) => {
-  agentState.textContent = available ? 'Agent37 ready' : 'Cloud setup pending';
-  agentButton.disabled = !available;
-}).catch(() => {
-  agentState.textContent = 'Cloud status unavailable';
+if (staticPreview) {
+  agentState.textContent = 'Hosted Agent37 demo pending';
   agentButton.disabled = true;
-});
+} else {
+  fetch('/api/cloud-status').then((response) => response.json()).then(({ available }) => {
+    agentState.textContent = available ? 'Agent37 ready' : 'Cloud setup pending';
+    agentButton.disabled = !available;
+  }).catch(() => {
+    agentState.textContent = 'Cloud status unavailable';
+    agentButton.disabled = true;
+  });
+}
 
 agentForm.addEventListener('submit', async (event) => {
   event.preventDefault();
