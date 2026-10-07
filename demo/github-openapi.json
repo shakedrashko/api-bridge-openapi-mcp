@@ -1,0 +1,19 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Public GitHub Issues API demo", "version": "1.0.0" },
+  "servers": [{ "url": "https://api.github.com" }],
+  "paths": {
+    "/repos/{owner}/{repo}/issues/{number}": {
+      "get": {
+        "operationId": "getGitHubIssue",
+        "summary": "Fetch one public GitHub issue or pull request by owner, repository, and number",
+        "parameters": [
+          { "name": "owner", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "repo", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "number", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ]
+      }
+    }
+  }
+}
+
