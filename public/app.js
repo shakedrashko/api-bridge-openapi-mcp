@@ -27,7 +27,7 @@ function renderParams() {
     input.name = param.name;
     input.type = param.type === 'integer' || param.type === 'number' ? 'number' : 'text';
     if (input.type === 'number') input.step = param.type === 'integer' ? '1' : 'any';
-    input.value = ({ id: '2', number: '1', owner: 'nodejs', repo: 'node', userId: '1' })[param.name] || '';
+    input.value = ({ id: '2', number: '66560', owner: 'nodejs', repo: 'node', userId: '1' })[param.name] || '';
     input.required = param.location === 'path';
     paramFields.append(label, input);
   }
@@ -138,6 +138,87 @@ agentForm.addEventListener('submit', async (event) => {
     agentResult.textContent = error.message;
   } finally {
     agentButton.disabled = false;
+  }
+});
+
+const specFile = document.querySelector('#spec-file');
+const originInput = document.querySelector('#trusted-origin');
+const operationList = document.querySelector('#import-operations');
+const importForm = document.querySelector('#import-form');
+const importStatus = document.querySelector('#import-status');
+let importedSpec = null;
+
+specFile.addEventListener('change', async () => {
+  importedSpec = null;
+  operationList.replaceChildren();
+  const file = specFile.files?.[0];
+  if (!file) return;
+  try {
+    if (file.size > 1_000_000) throw new Error('Choose an OpenAPI JSON file under 1 MB');
+    const spec = JSON.parse(await file.text());
+    if (!spec || typeof spec.paths !== 'object') throw new Error('The file has no OpenAPI paths');
+    const candidates = [];
+    const seen = new Set();
+    for (const [path, methods] of Object.entries(spec.paths)) {
+      const operation = methods?.get;
+      const name = operation?.operationId;
+      if (!path.startsWith('/') || !/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(name || '') || seen.has(name)) continue;
+      seen.add(name);
+      if (operation.requestBody || operation.security?.length || spec.security?.length) continue;
+      const params = [...(methods.parameters || []), ...(operation.parameters || [])];
+      if (params.some((p) => !p || p.$ref || !['path', 'query'].includes(p.in) || !/^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(p.name || '') || ![undefined, 'string', 'integer', 'number', 'boolean'].includes(p.schema?.type))) continue;
+      const placeholders = [...path.matchAll(/\{([^}]+)\}/g)].map((match) => match[1]);
+      if (placeholders.some((part) => !params.some((p) => p.in === 'path' && p.name === part))) continue;
+      candidates.push({ name, path });
+    }
+    if (candidates.length === 0) throw new Error('No supported unauthenticated GET operations found');
+    importedSpec = spec;
+    for (const item of candidates) {
+      const label = document.createElement('label');
+      label.className = 'operation-choice';
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.value = item.name;
+      const text = document.createElement('span');
+      text.textContent = `GET ${item.path}  ·  ${item.name}`;
+      label.append(checkbox, text);
+      operationList.append(label);
+    }
+    const serverUrl = spec.servers?.[0]?.url;
+    if (serverUrl) {
+      const parsed = new URL(serverUrl);
+      if (parsed.protocol === 'https:') originInput.value = parsed.origin;
+    }
+    importStatus.textContent = `${candidates.length} candidate GET operation(s). Select only those you approve.`;
+  } catch (error) {
+    const note = document.createElement('p');
+    note.className = 'field-note';
+    note.textContent = error.message;
+    operationList.append(note);
+    importStatus.textContent = 'Import failed';
+  }
+});
+
+importForm.addEventListener('submit', (event) => {
+  event.preventDefault();
+  try {
+    if (!importedSpec) throw new Error('Choose an OpenAPI JSON file first');
+    const approvedOperations = [...operationList.querySelectorAll('input:checked')].map((input) => input.value);
+    if (approvedOperations.length === 0) throw new Error('Approve at least one operation');
+    const origin = new URL(originInput.value);
+    if (origin.protocol !== 'https:' || origin.username || origin.password || origin.pathname !== '/' || origin.search || origin.hash) {
+      throw new Error('Enter an HTTPS origin without a path, query, or credentials');
+    }
+    const config = { spec: importedSpec, origin: origin.origin, approvedOperations };
+    const link = document.createElement('a');
+    const objectUrl = URL.createObjectURL(new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' }));
+    link.href = objectUrl;
+    link.download = 'api-bridge.config.json';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+    importStatus.textContent = `Downloaded configuration for ${approvedOperations.length} approved operation(s). Set BRIDGE_CONFIG_FILE to the downloaded path and run npm start.`;
+  } catch (error) {
+    importStatus.textContent = error.message;
   }
 });
 
