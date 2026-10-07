@@ -56,7 +56,7 @@ def main() -> None:
         ("01", "From an API description to approved tools", "Three read-only tools across two public APIs", OUTPUTS / "api-bridge-hero.png", 5),
         ("02", "Choose the exact GET operations to expose", "The browser exports a trusted-origin MCP configuration", OUTPUTS / "api-bridge-config-export.png", 6),
         ("03", "Verify the tool against a live public API", "GitHub Issues returned HTTP 200 for nodejs/node issue 66560", OUTPUTS / "api-bridge-current-issue.png", 7),
-        ("04", "Inspect the implementation and safeguards", "Typed inputs, fixed HTTPS origins, no redirects, bounded responses", OUTPUTS / "api-bridge-repo.png", 5),
+        ("04", "Inspect the implementation and safeguards", "Typed inputs, fixed HTTPS origins, no redirects, bounded responses", OUTPUTS / "api-bridge-repo-latest.png", 5),
     ]
     if args.cloud_screenshot:
         if not args.cloud_screenshot.is_file():
