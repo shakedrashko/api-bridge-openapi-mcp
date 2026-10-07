@@ -2,11 +2,11 @@
 
 This prototype turns explicitly approved GET operations from a trusted OpenAPI document into MCP tools. A web demo can also send a user goal to an OpenAI model through Agent37 Cloud's managed model API. The model proposes one tool call; the bridge validates it against the approved tool list before making the public API request. A second model call answers the goal from the verified response while treating response text as untrusted data.
 
-The [public browser preview](https://shakedrashko.github.io/api-bridge-openapi-mcp/) runs the three manual tools directly against public APIs and exports a local MCP configuration. Its Agent37 cloud-agent panel becomes usable only on a deployed Agent37 instance.
+The [Agent37 hosted demo](https://api-bridge-xztr0jc7pn.agent37.app/) runs the three approved public API tools and an OpenAI planning-and-answer step through Agent37's managed model router. The [public browser preview](https://shakedrashko.github.io/api-bridge-openapi-mcp/) runs the manual tools directly against public APIs and exports a local MCP configuration. Watch the [31-second demo video](https://drive.google.com/file/d/1ZEulTx8oam4Sb18FzwkNorbRaZB82dmE/view).
 
 ## Demo
 
-The bundled samples describe public JSONPlaceholder posts and GitHub issues. They are not client work or a claim of prior production deployment.
+The bundled samples describe public JSONPlaceholder posts and GitHub issues. They are not client work or a claim of prior production deployment. On October 7, 2026, the Agent37 hosted app used `openai/gpt-5.6-luna` at low reasoning effort to select `getGitHubIssue` for nodejs/node issue 66560; the approved tool returned HTTP 200 and the agent answered from that response.
 
 ```powershell
 npm install
