@@ -43,11 +43,22 @@
       <section class="agent-panel panel" aria-labelledby="agent-title">
         <div class="section-head"><div><p class="section-kicker">03 / DELEGATE</p><h2 id="agent-title">Ask the cloud agent</h2></div><span class="count" id="cloud-state">Checking cloud</span></div>
         <p class="section-note">Describe the result you need. An OpenAI model on Agent37 selects one approved tool; the bridge validates it and runs the public API request.</p>
-        <form id="agent-form"><label for="agent-goal">Your goal</label><input id="agent-goal" name="goal" maxlength="500" value="What is the title and state of nodejs/node issue 1?" required><button type="submit" id="agent-button">Plan and run <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></form>
+        <form id="agent-form"><label for="agent-goal">Your goal</label><input id="agent-goal" name="goal" maxlength="500" value="What is the status and reported problem of nodejs/node issue 66560?" required><button type="submit" id="agent-button">Plan and run <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></form>
         <div class="result-head"><span>AGENT TRACE</span><span id="agent-status" role="status" aria-live="polite">Ready</span></div>
         <pre id="agent-result" tabindex="0"><code>The plan and verified API response appear here.</code></pre>
       </section>
-      <section class="handoff"><div><p class="section-kicker">04 / CONNECT</p><h2>A small surface for a capable agent.</h2><p>The same approved operations are discoverable through the Model Context Protocol. The local test suite verifies tool discovery, argument rejection, and bounded upstream responses.</p></div><a href="https://github.com/shakedrashko/github-issues-mcp-sample" target="_blank" rel="noopener noreferrer">See another MCP sample <span aria-hidden="true">↗</span></a></section>
+      <section class="import-panel panel" aria-labelledby="import-title">
+        <div class="section-head"><div><p class="section-kicker">04 / GENERATE</p><h2 id="import-title">Bring your own API</h2></div><span class="count">Local file only</span></div>
+        <p class="section-note">Choose an OpenAPI JSON file, review its GET operations, and download a configuration for the MCP server. The file stays in your browser.</p>
+        <form id="import-form">
+          <label for="spec-file">OpenAPI document</label><input id="spec-file" type="file" accept=".json,application/json" required>
+          <label for="trusted-origin">Trusted HTTPS API origin</label><input id="trusted-origin" type="url" placeholder="https://api.example.com" required>
+          <fieldset><legend>Approve operations</legend><div id="import-operations" class="operation-list"><p class="field-note">Choose a spec to preview its read-only operations.</p></div></fieldset>
+          <button type="submit" id="export-button">Download MCP configuration <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m-4-4 4 4 4-4M4 17v3h16v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </form>
+        <p id="import-status" class="field-note" role="status" aria-live="polite">Then set BRIDGE_CONFIG_FILE to the downloaded file and run npm start.</p>
+      </section>
+      <section class="handoff"><div><p class="section-kicker">05 / CONNECT</p><h2>A small surface for a capable agent.</h2><p>The approved operations are discoverable through the Model Context Protocol. The local test suite verifies tool discovery, argument rejection, and bounded upstream responses.</p></div><a href="https://github.com/shakedrashko/api-bridge-openapi-mcp" target="_blank" rel="noopener noreferrer">View source and setup <span aria-hidden="true">↗</span></a></section>
     </main>
     <footer>Self-created prototype · Public sample data · No client credentials</footer>
   </div>
