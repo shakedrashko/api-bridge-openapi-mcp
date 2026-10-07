@@ -38,6 +38,8 @@ def request(method, url, *, body=None, instance=False):
 def deploy():
     if not KEY:
         raise SystemExit("Set AGENT37_API_KEY in this process environment before deploying")
+    output = ROOT.parent.parent / "outputs" / "agent37-instance.json"
+    output.parent.mkdir(parents=True, exist_ok=True)
     instance = request("POST", f"{HOSTING}/instances", body={
         "template": "agent37-hermes",
         "name": "api-bridge-hackathon",
@@ -47,6 +49,8 @@ def deploy():
     })
     instance_id = instance["id"]
     base = instance["url"]
+    # Preserve the billable instance ID before any upload or remote command can fail.
+    output.write_text(json.dumps({"instance_id": instance_id, "status": "created"}, indent=2) + "\n", encoding="utf-8")
     print(f"Created instance {instance_id} ({instance['status']})")
     for relative in UPLOADS:
         destination = f"/home/node/api-bridge/{relative}"
@@ -75,8 +79,6 @@ def deploy():
         ports = request("GET", f"{HOSTING}/instances/{instance_id}/public-ports")
         public = next(item["url"] for item in ports if item["port"] == 4187)
     metadata = {"instance_id": instance_id, "public_url": public, "model": model, "reasoning_effort": "low"}
-    output = ROOT.parent.parent / "outputs" / "agent37-instance.json"
-    output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(metadata))
 
