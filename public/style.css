@@ -56,6 +56,17 @@ pre{font:13px/1.6 'JetBrains Mono',Consolas,monospace;color:#c4f2d1;overflow:aut
 .agent-panel form label{grid-column:1/-1;margin-bottom:-8px}
 .agent-panel button{min-width:170px}
 .agent-panel pre{min-height:130px}
+.import-panel{margin-top:20px}
+.import-panel .section-note{max-width:760px;margin-bottom:4px}
+.import-panel form{max-width:760px}
+.import-panel input[type=file]{padding-top:9px}
+.import-panel fieldset{border:1px solid var(--line);border-radius:9px;padding:16px;margin:4px 0 0}
+.import-panel legend{padding:0 7px;color:#dce6ee;font-size:13px;font-weight:600}
+.operation-list{display:grid;gap:9px;max-height:210px;overflow:auto}
+.operation-choice{display:flex;align-items:flex-start;gap:10px;font-weight:400;color:var(--text)}
+.operation-choice input{width:16px;min-height:16px;height:16px;margin:2px 0 0;accent-color:var(--accent);flex:none}
+.operation-choice span{font:12px/1.5 'JetBrains Mono',Consolas,monospace;overflow-wrap:anywhere}
+#import-status{margin:15px 0 0;line-height:1.5}
 .handoff p:last-child{font-size:14px;line-height:1.6;max-width:650px;color:var(--muted);margin:12px 0 0}
 .handoff a{display:inline-flex;align-items:center;gap:10px;color:var(--accent);text-decoration:none;font-size:14px;font-weight:600;white-space:nowrap;padding:12px 0}
 .handoff a:hover{text-decoration:underline}
