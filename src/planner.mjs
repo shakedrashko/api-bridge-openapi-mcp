@@ -1,9 +1,10 @@
 const MAX_GOAL_CHARS = 500;
-const MODEL_ID = 'openai/gpt-5.6-luna';
+const MODEL_ID = process.env.API_BRIDGE_MODEL_ID || 'openai/gpt-5.6-luna';
+const REASONING_EFFORT = 'low';
 const MAX_EVIDENCE_CHARS = 12_000;
 
 export function plannerModel() {
-  return { id: MODEL_ID, reasoningEffort: 'low' };
+  return { id: MODEL_ID, reasoningEffort: REASONING_EFFORT };
 }
 
 async function complete(messages, { fetcher = fetch, baseUrl = process.env.AGENT37_LLM_PROXY_URL, token = process.env.AGENT37_MANAGED_TOKEN } = {}) {
@@ -15,7 +16,7 @@ async function complete(messages, { fetcher = fetch, baseUrl = process.env.AGENT
   const response = await fetcher(new URL('chat/completions', `${parsedBase.href.replace(/\/$/, '')}/`), {
     method: 'POST',
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ model: MODEL_ID, reasoning_effort: 'low', messages, max_tokens: 300 }),
+    body: JSON.stringify({ model: MODEL_ID, reasoning_effort: REASONING_EFFORT, messages, max_tokens: 300 }),
     signal: AbortSignal.timeout(20_000),
   });
   if (!response.ok) throw new Error(`Cloud model returned HTTP ${response.status}`);
