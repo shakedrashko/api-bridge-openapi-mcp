@@ -32,11 +32,13 @@ if (process.argv[1] && import.meta.url === new URL(`file:///${process.argv[1].re
   const specFile = process.env.OPENAPI_SPEC_FILE;
   const origin = process.env.TRUSTED_API_ORIGIN;
   const operations = process.env.APPROVED_GET_OPERATIONS?.split(',').map((x) => x.trim()).filter(Boolean) || [];
+  const configFile = process.env.BRIDGE_CONFIG_FILE;
   const custom = Boolean(specFile || origin || operations.length);
+  if (configFile && custom) throw new Error('Use BRIDGE_CONFIG_FILE or the three individual variables, not both');
   if (custom && (!specFile || !origin || operations.length === 0)) {
     throw new Error('Set OPENAPI_SPEC_FILE, TRUSTED_API_ORIGIN, and APPROVED_GET_OPERATIONS together');
   }
-  const configs = custom ? [{ spec: JSON.parse(await readFile(specFile, 'utf8')), origin, approvedOperations: operations }] : [
+  const configs = configFile ? [JSON.parse(await readFile(configFile, 'utf8'))] : custom ? [{ spec: JSON.parse(await readFile(specFile, 'utf8')), origin, approvedOperations: operations }] : [
     { spec: JSON.parse(await readFile(new URL('../demo/openapi.json', import.meta.url), 'utf8')), origin: 'https://jsonplaceholder.typicode.com', approvedOperations: ['listPosts', 'getPost'] },
     { spec: JSON.parse(await readFile(new URL('../demo/github-openapi.json', import.meta.url), 'utf8')), origin: 'https://api.github.com', approvedOperations: ['getGitHubIssue'] },
   ];
