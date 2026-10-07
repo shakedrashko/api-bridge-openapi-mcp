@@ -162,7 +162,19 @@ const agentStatus = document.querySelector('#agent-status');
 const agentResult = document.querySelector('#agent-result code');
 
 if (staticPreview) {
-  agentState.textContent = 'Hosted Agent37 demo pending';
+  agentState.textContent = 'Agent mode on hosted demo';
+  const hostedDemoLink = document.createElement('a');
+  hostedDemoLink.href = 'https://api-bridge-xztr0jc7pn.agent37.app/';
+  hostedDemoLink.textContent = 'Open hosted Agent37 demo';
+  hostedDemoLink.target = '_blank';
+  hostedDemoLink.rel = 'noopener noreferrer';
+  document.querySelector('.agent-panel .section-note').replaceChildren(
+    'This preview runs manual tools and exports MCP configurations. ',
+    hostedDemoLink,
+    ' to plan and run an agent request.',
+  );
+  agentStatus.textContent = 'Use hosted demo';
+  agentResult.textContent = 'Open the hosted demo to see an agent plan and verified API response.';
   agentButton.disabled = true;
 } else {
   fetch('/api/cloud-status').then((response) => response.json()).then(({ available }) => {
